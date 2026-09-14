@@ -5,8 +5,7 @@
  * licensed stock photography (Pexels) plus generated campaign imagery.
  */
 
-const px = (id: number, w = 1000, h = 1250) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&fit=crop&w=${w}&h=${h}`;
+const px = (id: number) => `/images/catalog/${id}.webp`;
 
 export const COLORS: Array<{ name: string; presentation: string; hex: string }> = [
   { name: "white", presentation: "White", hex: "#F4F2EE" },
@@ -84,9 +83,9 @@ export const TAXONS: TaxonSeed[] = [
   { name: "Outerwear", permalink: "outerwear", kind: "category", description: "Overcoats, topcoats and technical shells for the cold months.", imageUrl: px(34082626), position: 9 },
   { name: "Accessories", permalink: "accessories", kind: "category", description: "Leather goods, beanies and totes to finish the outfit.", imageUrl: px(8346477), position: 10 },
 
-  { name: "New In", permalink: "new-in", kind: "collection", description: "The latest arrivals, added weekly.", imageUrl: "/images/edit-tailoring.jpg", position: 1 },
-  { name: "The Linen Edit", permalink: "the-linen-edit", kind: "collection", description: "Breathable European linen for Highveld afternoons and Cape summer evenings.", imageUrl: "/images/edit-linen.jpg", position: 2 },
-  { name: "Winter Layers", permalink: "winter-layers", kind: "collection", description: "Knitwear, wool and outerwear built for mornings that start at 4°C and afternoons that reach 20°C.", imageUrl: "/images/edit-knitwear.jpg", position: 3 },
+  { name: "New In", permalink: "new-in", kind: "collection", description: "The latest arrivals, added weekly.", imageUrl: "/images/edit-tailoring.webp", position: 1 },
+  { name: "The Linen Edit", permalink: "the-linen-edit", kind: "collection", description: "Breathable European linen for Highveld afternoons and Cape summer evenings.", imageUrl: "/images/edit-linen.webp", position: 2 },
+  { name: "Winter Layers", permalink: "winter-layers", kind: "collection", description: "Knitwear, wool and outerwear built for mornings that start at 4°C and afternoons that reach 20°C.", imageUrl: "/images/edit-knitwear.webp", position: 3 },
   { name: "Wardrobe Essentials", permalink: "wardrobe-essentials", kind: "collection", description: "The pieces everything else is built around.", imageUrl: px(7643774), position: 4 },
 ];
 
@@ -627,7 +626,7 @@ export const PRODUCTS: ProductSeed[] = [
     },
     colors: ["navy", "charcoal", "oatmeal", "bottle-green"],
     sizes: TOPS,
-    images: [px(21822451), "/images/edit-knitwear.jpg"],
+    images: [px(21822451), "/images/edit-knitwear.webp"],
     stock: "healthy",
     stockOverrides: { "oatmeal/m": 4, "bottle-green/l": 2, "navy/xxl": 0 },
     bestseller: true,

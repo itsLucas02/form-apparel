@@ -5,7 +5,7 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
   return (
     <div className="fade-in lg:grid lg:min-h-[calc(100vh-112px)] lg:grid-cols-2">
       <div className="relative hidden bg-ink lg:block">
-        <Image src="/images/edit-tailoring.jpg" alt="" fill sizes="50vw" className="object-cover opacity-90" />
+        <Image src="/images/edit-tailoring.webp" alt="" fill sizes="50vw" className="object-cover opacity-90" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent" />
         <p className="display absolute bottom-12 left-12 max-w-md text-[44px] leading-[1] text-bone">
           Made for South African days.

@@ -10,7 +10,8 @@ accounts — running on a simulated, self-seeding backend.
 - **Cart & checkout** — guest or signed-in carts, address/delivery/payment steps.
 - **Orders** — order history and a time-compressed courier tracking timeline.
 - **Accounts** — registration, sign-in, profile and saved addresses.
-- **Self-seeding demo** — migrates and seeds itself on first boot.
+- **Self-hosted imagery** — every image is downloaded to `public/images` and
+  converted to WebP by a script; no third-party hotlinking.
 
 ## Architecture
 
@@ -33,11 +34,14 @@ the steps to reconnect a real Spree backend.
 ```bash
 cp .env.example .env      # set DATABASE_URL
 pnpm install              # from the repo root
+pnpm --filter @form/apparel-a db:seed   # migrate + seed the demo catalogue
 pnpm --filter @form/apparel-a dev
 ```
 
-On first boot the app applies Drizzle migrations and seeds a demo catalogue
-(products, variants, taxons, a customer, and sample orders).
+`db:seed` applies Drizzle migrations and seeds a demo catalogue (products,
+variants, taxons, a customer, and sample orders). In local development the app
+also bootstraps itself once at server start; in production the schema is
+migrated and seeded explicitly (never inside a request).
 
 **Demo customer:** `thabo@example.co.za` / `form-demo`
 
@@ -45,14 +49,28 @@ On first boot the app applies Drizzle migrations and seeds a demo catalogue
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DATABASE_URL` | Yes | PostgreSQL connection string (use the pooled URL at runtime) |
+| `DATABASE_URL_UNPOOLED` | No | Direct connection, used by `db:seed`/`db:reset` when present |
 | `COMMERCE_BACKEND` | No | `local` (default) or `spree` |
+
+## Images
+
+Catalogue and editorial imagery is committed under `public/images` as WebP. To
+regenerate it (re-download from Pexels and re-convert):
+
+```bash
+pnpm --filter @form/apparel-a images:fetch          # skip existing files
+pnpm --filter @form/apparel-a images:fetch -- --force
+```
+
+The product/taxon manifest is derived from `src/lib/commerce/local/seed-data.ts`,
+so it never drifts from the seed.
 
 ## Database
 
 Schema lives in [`src/db/schema.ts`](src/db/schema.ts); SQL migrations in
-[`drizzle/`](drizzle). Migrations are applied automatically on boot by
-[`src/lib/commerce/local/bootstrap.ts`](src/lib/commerce/local/bootstrap.ts).
+[`drizzle/`](drizzle). Migrations and seeding are driven by
+[`scripts/db-bootstrap.ts`](scripts/db-bootstrap.ts) via `db:seed` / `db:reset`.
 
 To generate a new migration after editing the schema:
 
@@ -69,10 +87,14 @@ pnpm --filter @form/apparel-a exec drizzle-kit generate
 | `pnpm start` | Serve the production build |
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm db:seed` | Migrate + seed the demo catalogue |
+| `pnpm db:reset` | Truncate everything, then migrate + seed |
+| `pnpm images:fetch` | Download + convert all imagery to WebP |
 
 ## Deployment
 
 Deploys to Vercel as its own project (Root Directory: `apps/apparel-a`). Provide
 `DATABASE_URL` from a Postgres provider — the free Neon integration on the Vercel
-Marketplace works well. All routes are dynamic, so the database is only needed at
-runtime.
+Marketplace works well (it also injects `DATABASE_URL_UNPOOLED`). All routes are
+dynamic, so the database is only needed at runtime. Seed a fresh database once
+with `pnpm --filter @form/apparel-a db:seed`.

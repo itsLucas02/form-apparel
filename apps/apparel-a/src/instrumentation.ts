@@ -1,10 +1,16 @@
 export async function register() {
-  if (process.env.NEXT_RUNTIME === "nodejs" && process.env.COMMERCE_BACKEND !== "spree") {
+  // Auto-bootstrap is a local-development convenience only. In production the
+  // schema is migrated and seeded explicitly (`pnpm db:seed`) — running
+  // migrations/seeds inside the request lifecycle is unsafe on serverless.
+  if (
+    process.env.NEXT_RUNTIME === "nodejs" &&
+    process.env.NODE_ENV !== "production" &&
+    process.env.COMMERCE_BACKEND !== "spree"
+  ) {
     const { ensureCommerceReady } = await import("@/lib/commerce/local/bootstrap");
     try {
       await ensureCommerceReady();
     } catch (error) {
-      // The layout retries lazily; don't block server start-up on a transient DB issue.
       console.error("[commerce] bootstrap failed", error);
     }
   }

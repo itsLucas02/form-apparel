@@ -35,6 +35,9 @@ pnpm install
 cp apps/apparel-a/.env.example apps/apparel-a/.env
 # then edit DATABASE_URL
 
+# Migrate + seed the demo catalogue
+pnpm --filter @form/apparel-a db:seed
+
 # Run a single app
 pnpm --filter @form/apparel-a dev
 
@@ -42,8 +45,9 @@ pnpm --filter @form/apparel-a dev
 pnpm dev
 ```
 
-The app **auto-migrates and seeds** a demo catalogue on first boot, so no manual
-database setup is required. Demo customer: `thabo@example.co.za` / `form-demo`.
+The database is seeded with a demo catalogue on demand (`db:seed`). In local
+development the app also bootstraps itself at server start. Demo customer:
+`thabo@example.co.za` / `form-demo`.
 
 ## Scripts
 
@@ -63,7 +67,8 @@ Each app deploys independently to Vercel:
    *"Include files outside the root directory"*.
 3. Add a Postgres database (e.g. the free **Neon** integration from the Vercel
    Marketplace) and confirm `DATABASE_URL` is injected.
-4. Deploy. `COMMERCE_BACKEND` defaults to `local` (simulated demo backend).
+4. Deploy, then seed once: `pnpm --filter @form/apparel-a db:seed`.
+   `COMMERCE_BACKEND` defaults to `local` (simulated demo backend).
 
 ## License
 

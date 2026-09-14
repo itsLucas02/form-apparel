@@ -7,7 +7,6 @@ import { Header } from "@/components/layout/header";
 import { getCartToken, getCurrentUser } from "@/lib/auth/session";
 import { brand } from "@/lib/brand";
 import { commerce } from "@/lib/commerce";
-import { ensureCommerceReady } from "@/lib/commerce/local/bootstrap";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +25,6 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  if (process.env.COMMERCE_BACKEND !== "spree") await ensureCommerceReady();
-
   const [categories, collections, user, cartToken] = await Promise.all([
     commerce.listTaxons("category"),
     commerce.listTaxons("collection"),

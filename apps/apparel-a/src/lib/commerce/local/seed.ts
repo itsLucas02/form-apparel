@@ -50,12 +50,11 @@ export async function seedDatabase(): Promise<void> {
   await db.insert(s.shippingMethods).values(SHIPPING_METHODS);
   await db.insert(s.paymentMethods).values(PAYMENT_METHODS);
 
-  /* Products */
-  const variantIdBySku = new Map<string, number>();
-  for (const seed of PRODUCTS) {
-    const [product] = await db
-      .insert(s.products)
-      .values({
+  /* Products — inserted in bulk, then linked by slug. */
+  const productRows = await db
+    .insert(s.products)
+    .values(
+      PRODUCTS.map((seed) => ({
         name: seed.name,
         slug: seed.slug,
         description: seed.description,
@@ -67,58 +66,85 @@ export async function seedDatabase(): Promise<void> {
         bestseller: Boolean(seed.bestseller),
         details: seed.details,
         createdAt: daysAgo(seed.availableDaysAgo),
-      })
-      .returning();
+      })),
+    )
+    .returning({ id: s.products.id, slug: s.products.slug });
+  const productId = new Map(productRows.map((p) => [p.slug, p.id]));
 
-    const taxonLinks = [seed.category, ...(seed.collections ?? []), ...(seed.newArrival ? ["new-in"] : [])];
-    await db.insert(s.productsTaxons).values(
-      [...new Set(taxonLinks)].map((permalink, i) => ({
-        productId: product.id,
+  await db.insert(s.productsTaxons).values(
+    PRODUCTS.flatMap((seed) => {
+      const links = [...new Set([seed.category, ...(seed.collections ?? []), ...(seed.newArrival ? ["new-in"] : [])])];
+      return links.map((permalink, i) => ({
+        productId: productId.get(seed.slug)!,
         taxonId: taxonId.get(permalink)!,
         position: i,
-      })),
-    );
+      }));
+    }),
+  );
 
-    await db.insert(s.productOptionTypes).values([
-      { productId: product.id, optionTypeId: colorType.id, position: 1 },
-      { productId: product.id, optionTypeId: sizeType.id, position: 2 },
-    ]);
+  await db.insert(s.productOptionTypes).values(
+    PRODUCTS.flatMap((seed) => [
+      { productId: productId.get(seed.slug)!, optionTypeId: colorType.id, position: 1 },
+      { productId: productId.get(seed.slug)!, optionTypeId: sizeType.id, position: 2 },
+    ]),
+  );
 
-    await db.insert(s.images).values(
+  await db.insert(s.images).values(
+    PRODUCTS.flatMap((seed) =>
       seed.images.map((url, i) => ({
-        productId: product.id,
+        productId: productId.get(seed.slug)!,
         url,
         alt: `${seed.name} – view ${i + 1}`,
         position: i,
       })),
-    );
+    ),
+  );
 
-    // Master variant (Spree keeps one per product) + one sellable variant per colour/size.
-    await db.insert(s.variants).values({ productId: product.id, sku: `FRM-${seed.code}-MASTER`, isMaster: true, position: 0 });
+  /* Variants — one master + one sellable per colour/size, all in bulk. */
+  type VariantPlan = { sku: string; colorValId: number; sizeValId: number; countOnHand: number };
+  const plans: VariantPlan[] = [];
+  const variantValues: Array<{ productId: number; sku: string; isMaster: boolean; position: number }> = [];
 
+  for (const seed of PRODUCTS) {
+    const pid = productId.get(seed.slug)!;
+    variantValues.push({ productId: pid, sku: `FRM-${seed.code}-MASTER`, isMaster: true, position: 0 });
     let index = 0;
     for (const color of seed.colors) {
       for (const size of seed.sizes) {
         const sku = `FRM-${seed.code}-${color.toUpperCase()}-${size.toUpperCase()}`;
-        const [variant] = await db
-          .insert(s.variants)
-          .values({ productId: product.id, sku, isMaster: false, position: index + 1 })
-          .returning();
-        await db.insert(s.optionValueVariants).values([
-          { variantId: variant.id, optionValueId: colorId.get(color)! },
-          { variantId: variant.id, optionValueId: sizeId.get(size)! },
-        ]);
+        variantValues.push({ productId: pid, sku, isMaster: false, position: index + 1 });
         const override = seed.stockOverrides?.[`${color}/${size}`];
-        await db.insert(s.stockItems).values({
-          variantId: variant.id,
+        plans.push({
+          sku,
+          colorValId: colorId.get(color)!,
+          sizeValId: sizeId.get(size)!,
           countOnHand: override ?? stockFor(seed.stock, index),
-          backorderable: false,
         });
-        variantIdBySku.set(sku, variant.id);
         index += 1;
       }
     }
   }
+
+  const insertedVariants = await db
+    .insert(s.variants)
+    .values(variantValues)
+    .returning({ id: s.variants.id, sku: s.variants.sku });
+  const variantIdBySku = new Map(insertedVariants.map((v) => [v.sku, v.id]));
+
+  await db.insert(s.optionValueVariants).values(
+    plans.flatMap((p) => [
+      { variantId: variantIdBySku.get(p.sku)!, optionValueId: p.colorValId },
+      { variantId: variantIdBySku.get(p.sku)!, optionValueId: p.sizeValId },
+    ]),
+  );
+
+  await db.insert(s.stockItems).values(
+    plans.map((p) => ({
+      variantId: variantIdBySku.get(p.sku)!,
+      countOnHand: p.countOnHand,
+      backorderable: false,
+    })),
+  );
 
   /* Demo customer */
   const [user] = await db

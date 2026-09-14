@@ -22,7 +22,7 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="relative isolate h-[82svh] min-h-[560px] w-full overflow-hidden bg-ink text-bone">
         <Image
-          src="/images/hero-aw26.jpg"
+          src="/images/hero-aw26.webp"
           alt="Man in a camel overcoat on a Cape Town street at golden hour"
           fill
           priority
@@ -96,7 +96,7 @@ export default async function HomePage() {
         <div className="grid items-center gap-8 md:grid-cols-2 lg:gap-16">
           <div className="relative overflow-hidden bg-bone-deep" style={{ aspectRatio: "4 / 5" }}>
             <Image
-              src="/images/edit-linen.jpg"
+              src="/images/edit-linen.webp"
               alt="Man in a sand linen shirt against a whitewashed Karoo wall"
               fill
               sizes="(min-width: 768px) 50vw, 100vw"
@@ -150,7 +150,7 @@ export default async function HomePage() {
           </div>
           <div className="relative order-1 overflow-hidden md:order-2" style={{ aspectRatio: "4 / 5" }}>
             <Image
-              src="/images/edit-knitwear.jpg"
+              src="/images/edit-knitwear.webp"
               alt="Folded merino and cable knits on an oak table"
               fill
               sizes="(min-width: 768px) 50vw, 100vw"
@@ -187,7 +187,7 @@ export default async function HomePage() {
       <section className="container-x pt-14 sm:pt-20">
         <Link href="/collections/wardrobe-essentials" className="group relative block overflow-hidden bg-bone-deep" style={{ aspectRatio: "16 / 9" }}>
           <Image
-            src="/images/edit-tailoring.jpg"
+            src="/images/edit-tailoring.webp"
             alt="Two men walking through Maboneng in late afternoon light"
             fill
             sizes="100vw"

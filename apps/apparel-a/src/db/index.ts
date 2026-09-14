@@ -15,6 +15,8 @@ export const pool =
   globalForDb.__arenaNextJsPostgresqlPool ??
   new Pool({
     connectionString: databaseUrl,
+    // Serverless: keep each instance to a single connection (Neon pools upstream).
+    max: process.env.VERCEL ? 1 : undefined,
   });
 
 if (process.env.NODE_ENV !== "production") {
