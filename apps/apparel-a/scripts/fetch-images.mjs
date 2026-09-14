@@ -1,6 +1,6 @@
 /**
- * Downloads every catalogue image used by the seed data and the four editorial
- * images, converts them to WebP, and writes them under `public/images/`.
+ * Downloads every catalogue image used by the seed data, converts them to
+ * WebP, and writes them under `public/images/catalog/`.
  *
  *   node scripts/fetch-images.mjs            # skip files that already exist
  *   node scripts/fetch-images.mjs --force    # re-download everything
@@ -8,6 +8,10 @@
  * Catalogue sources come from `src/lib/commerce/local/seed-data.ts` so the
  * manifest never drifts from the seed. Pexels imagery is free to use and modify
  * (https://www.pexels.com/license/).
+ *
+ * The editorial/hero images (hero-aw26, edit-*, under `public/images/`) are
+ * curated assets committed directly to the repo and are deliberately NOT
+ * managed by this script.
  */
 import { mkdir, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -17,20 +21,11 @@ import sharp from "sharp";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const seedFile = path.join(root, "src/lib/commerce/local/seed-data.ts");
-const imagesDir = path.join(root, "public/images");
-const catalogDir = path.join(imagesDir, "catalog");
+const catalogDir = path.join(root, "public/images/catalog");
 const force = process.argv.includes("--force");
 
 const pexels = (id, w, h) =>
   `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&fit=crop&w=${w}&h=${h}`;
-
-/** Editorial / hero imagery (4 files the app references directly). */
-const editorials = [
-  { name: "hero-aw26", id: 34082626, w: 2400, h: 1350 },
-  { name: "edit-linen", id: 17805751, w: 1400, h: 1750 },
-  { name: "edit-knitwear", id: 4651447, w: 1400, h: 1750 },
-  { name: "edit-tailoring", id: 29571692, w: 2000, h: 1125 },
-];
 
 const QUALITY = 82;
 
@@ -81,16 +76,6 @@ async function main() {
       outFile: path.join(catalogDir, `${id}.webp`),
       width: 1200,
       height: 1500,
-    })),
-  );
-
-  console.log(`Editorial: ${editorials.length} images`);
-  await runPool(
-    editorials.map((e) => ({
-      url: pexels(e.id, e.w, e.h),
-      outFile: path.join(imagesDir, `${e.name}.webp`),
-      width: e.w,
-      height: e.h,
     })),
   );
 
