@@ -15,8 +15,10 @@ export const pool =
   globalForDb.__arenaNextJsPostgresqlPool ??
   new Pool({
     connectionString: databaseUrl,
-    // Serverless: keep each instance to a single connection (Neon pools upstream).
-    max: process.env.VERCEL ? 1 : undefined,
+    // The catalogue is hydrated with a single Promise.all of ~10 queries;
+    // keep enough parallel connections to avoid serialising them. Neon's
+    // pooled endpoint multiplexes these upstream.
+    max: process.env.VERCEL ? 10 : undefined,
   });
 
 if (process.env.NODE_ENV !== "production") {

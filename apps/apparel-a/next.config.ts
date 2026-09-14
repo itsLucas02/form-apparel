@@ -2,9 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // All imagery is self-hosted under public/images and optimised per request
-    // (responsive srcset + AVIF/WebP).
-    formats: ["image/avif", "image/webp"],
+    // Imagery is already downloaded and converted to WebP under public/images,
+    // so it is served directly as static assets (edge-cached, no per-request
+    // optimiser invocation) rather than re-encoded on the fly.
+    unoptimized: true,
   },
 };
 
