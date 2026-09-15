@@ -34,9 +34,44 @@
 }
 
 @layer base {
+  :root {
+    /* Height of the sticky header (announcement bar + nav row), used to size the
+       home hero so it fills the viewport exactly. Deliberately a few px under the
+       real height so the hero can never leave a gap; add the category nav at lg. */
+    --header-h: 100px;
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --header-h: 142px;
+    }
+  }
+
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--color-stone-400) var(--color-bone); /* Firefox */
+    scrollbar-width: thin;
+  }
+
+  /* Themed scrollbars – applies to the page and every inner scroll area. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bone);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-stone-400);
+    border: 2px solid var(--color-bone);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-stone-500);
+  }
+  ::-webkit-scrollbar-corner {
+    background: var(--color-bone);
   }
 
   body {
