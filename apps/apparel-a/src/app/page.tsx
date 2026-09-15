@@ -20,7 +20,7 @@ export default async function HomePage() {
   return (
     <div className="fade-in">
       {/* Hero */}
-      <section className="relative isolate min-h-[max(560px,calc(100svh-var(--header-h)))] w-full overflow-hidden bg-ink text-bone">
+      <section className="relative isolate h-[calc(100svh-var(--header-h))] min-h-[560px] w-full overflow-hidden bg-ink text-bone">
         <Image
           src="/images/hero-aw26.webp"
           alt="Man in a camel overcoat on a Cape Town street at golden hour"
