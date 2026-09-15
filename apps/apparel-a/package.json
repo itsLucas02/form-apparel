@@ -10,6 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "images:fetch": "node scripts/fetch-images.mjs",
+    "brand:images": "node scripts/make-brand-images.mjs",
+    "shots": "node scripts/capture-screenshots.mjs",
     "db:seed": "tsx scripts/db-bootstrap.ts",
     "db:reset": "tsx scripts/db-bootstrap.ts --reset"
   },

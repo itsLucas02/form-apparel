@@ -13,6 +13,8 @@ accounts — running on a simulated, self-seeding backend.
 - **Self-hosted imagery** — every image is downloaded to `public/images` and
   converted to WebP by a script; no third-party hotlinking.
 
+![Home page](../../docs/screenshots/home-desktop.png)
+
 ## Architecture
 
 The UI talks to a single boundary, `CommerceClient`
@@ -90,6 +92,8 @@ pnpm --filter @form/apparel-a exec drizzle-kit generate
 | `pnpm db:seed` | Migrate + seed the demo catalogue |
 | `pnpm db:reset` | Truncate everything, then migrate + seed |
 | `pnpm images:fetch` | Download + convert all imagery to WebP |
+| `pnpm brand:images` | Regenerate favicon / icons / OG images |
+| `pnpm shots` | Capture README screenshots (headless Chrome) |
 
 ## Deployment
 

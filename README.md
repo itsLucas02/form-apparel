@@ -4,6 +4,19 @@ A monorepo of storefront variations for **FORM**, a South African men's apparel
 brand. Each app is a distinct take on the same single-store e-commerce theme —
 different code, mechanics, and UI/UX — built and deployed independently.
 
+> **Live demo:** <https://form-apparel-a.vercel.app> — demo customer
+> `thabo@example.co.za` / `form-demo`.
+
+## Screenshots
+
+| Home | Products |
+| --- | --- |
+| ![Home page](docs/screenshots/home-desktop.png) | ![Product listing](docs/screenshots/products-desktop.png) |
+
+| Product detail | Mobile home |
+| --- | --- |
+| ![Product detail](docs/screenshots/product-desktop.png) | ![Mobile home](docs/screenshots/home-mobile.png) |
+
 ## Apps
 
 | App | Description | Status |
@@ -57,6 +70,7 @@ development the app also bootstraps itself at server start. Demo customer:
 | `pnpm build` | Build all apps |
 | `pnpm lint` | Lint all apps |
 | `pnpm typecheck` | Type-check all apps |
+| `pnpm --filter @form/apparel-a shots` | Capture README screenshots (headless Chrome) |
 
 ## Deployment
 
