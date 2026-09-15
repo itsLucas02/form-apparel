@@ -11,11 +11,25 @@ import { commerce } from "@/lib/commerce";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://form-apparel-a.vercel.app"),
   title: {
     default: `${brand.name} — Men's apparel, South Africa`,
     template: `%s — ${brand.name}`,
   },
   description: brand.description,
+  openGraph: {
+    type: "website",
+    siteName: brand.name,
+    title: `${brand.name} — Men's apparel, South Africa`,
+    description: brand.description,
+    url: "/",
+    locale: "en_ZA",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${brand.name} — Men's apparel, South Africa`,
+    description: brand.description,
+  },
 };
 
 export const viewport: Viewport = {

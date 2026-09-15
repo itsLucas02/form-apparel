@@ -31,9 +31,8 @@ interface CatalogSnapshot {
  * The catalogue is small (tens of products) so we hydrate it in a handful of
  * queries and filter/sort in memory. A Spree adapter would instead translate
  * ProductQuery into `filter[...]`/`sort` params on /api/v2/storefront/products.
- * `cache` dedupes the load within a single request.
  */
-export const loadCatalog = cache(async (): Promise<CatalogSnapshot> => {
+async function queryCatalogRows() {
   const [
     taxonRows,
     optionTypeRows,
@@ -57,6 +56,53 @@ export const loadCatalog = cache(async (): Promise<CatalogSnapshot> => {
     db.select().from(s.stockItems),
     db.select().from(s.images).orderBy(asc(s.images.position), asc(s.images.id)),
   ]);
+
+  return {
+    taxonRows,
+    optionTypeRows,
+    optionValueRows,
+    productRows,
+    productTaxonRows,
+    productOptionTypeRows,
+    variantRows,
+    ovvRows,
+    stockRows,
+    imageRows,
+  };
+}
+
+type CatalogRows = Awaited<ReturnType<typeof queryCatalogRows>>;
+
+/**
+ * The raw rows are cached for a short window so navigating between pages does
+ * not re-run the ~10 queries (this is the `server-cache-lru` pattern). The
+ * cache lives per server instance; `cache` still dedupes per request.
+ */
+let rowsCache: { expires: number; rows: CatalogRows } | null = null;
+const ROWS_TTL_MS = 5 * 60 * 1000;
+
+async function loadCatalogRows(): Promise<CatalogRows> {
+  if (rowsCache && rowsCache.expires > Date.now()) return rowsCache.rows;
+  const rows = await queryCatalogRows();
+  rowsCache = { expires: Date.now() + ROWS_TTL_MS, rows };
+  return rows;
+}
+
+export const loadCatalog = cache(async (): Promise<CatalogSnapshot> => buildSnapshot(await loadCatalogRows()));
+
+function buildSnapshot(data: CatalogRows): CatalogSnapshot {
+  const {
+    taxonRows,
+    optionTypeRows,
+    optionValueRows,
+    productRows,
+    productTaxonRows,
+    productOptionTypeRows,
+    variantRows,
+    ovvRows,
+    stockRows,
+    imageRows,
+  } = data;
 
   const optionTypeById = new Map(optionTypeRows.map((r) => [r.id, r]));
   const optionValueById = new Map<number, OptionValue>();
@@ -195,7 +241,7 @@ export const loadCatalog = cache(async (): Promise<CatalogSnapshot> => {
     taxons,
     taxonsByPermalink: new Map(taxons.map((t) => [t.permalink, t])),
   };
-});
+}
 
 function uniqueOptionValues(values: Array<OptionValue | null>): OptionValue[] {
   const seen = new Map<number, OptionValue>();

@@ -48,12 +48,24 @@ export function ProductView({ product, details, breadcrumbs }: ProductViewProps)
   const sizeAvailability = (s: OptionValue) => variantFor(color, s)?.stock ?? null;
   const colorAvailable = (c: OptionValue) => product.variants.some((v) => v.color?.id === c.id && v.stock.purchasable);
 
-  useEffect(() => {
-    // Clamp quantity when switching to a variant with less stock.
-    if (!selectedVariant) return;
-    const max = selectedVariant.stock.backorderable ? 10 : selectedVariant.stock.countOnHand;
-    if (quantity > max && max > 0) setQuantity(max);
-  }, [selectedVariant, quantity]);
+  // Clamp the quantity to the selected variant's stock when the option changes
+  // (handled in the selection handlers rather than an effect).
+  const clampToVariant = (c: OptionValue | null, s: OptionValue | null, next: number) => {
+    const variant = variantFor(c, s);
+    if (!variant) return next;
+    const max = variant.stock.backorderable ? 10 : variant.stock.countOnHand;
+    return max > 0 ? Math.min(next, max) : next;
+  };
+
+  const selectColor = (c: OptionValue) => {
+    setColor(c);
+    setQuantity((q) => clampToVariant(c, size, q));
+  };
+
+  const selectSize = (s: OptionValue) => {
+    setSize(s);
+    setQuantity((q) => clampToVariant(color, s, q));
+  };
 
   const images = useMemo(() => {
     const colourImages = color ? product.images.filter((img) => img.optionValueId === color.id) : [];
@@ -126,7 +138,7 @@ export function ProductView({ product, details, breadcrumbs }: ProductViewProps)
                         title={available ? c.presentation : `${c.presentation} — sold out`}
                         aria-label={available ? c.presentation : `${c.presentation}, sold out`}
                         aria-pressed={active}
-                        onClick={() => setColor(c)}
+                        onClick={() => selectColor(c)}
                         className={cn(
                           "relative flex size-11 items-center justify-center rounded-full border transition-shadow",
                           active ? "border-ink ring-1 ring-ink ring-offset-2 ring-offset-bone" : "border-black/10 hover:ring-1 hover:ring-stone-300 hover:ring-offset-2 hover:ring-offset-bone",
@@ -162,7 +174,7 @@ export function ProductView({ product, details, breadcrumbs }: ProductViewProps)
                         disabled={!available}
                         aria-pressed={active}
                         aria-label={available ? `Size ${s.presentation}` : `Size ${s.presentation}, sold out`}
-                        onClick={() => setSize(s)}
+                        onClick={() => selectSize(s)}
                         className={cn(
                           "relative flex h-12 items-center justify-center overflow-hidden border text-[13px] transition-colors",
                           active

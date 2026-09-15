@@ -1,7 +1,7 @@
 import path from "node:path";
 import { sql } from "drizzle-orm";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
-import { db } from "@/db";
+import { db } from "@/db/pg";
 import * as s from "@/db/schema";
 import { seedDatabase } from "./seed";
 

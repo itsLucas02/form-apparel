@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "@/db";
+import { db } from "@/db/pg";
 import * as s from "@/db/schema";
 import { hashPassword } from "@/lib/auth/password";
 import {

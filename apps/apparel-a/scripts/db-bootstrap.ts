@@ -34,7 +34,7 @@ async function main() {
   const reset = process.argv.includes("--reset");
 
   const schema = await import("../src/db/schema");
-  const { db } = await import("../src/db");
+  const { db } = await import("../src/db/pg");
   const { ensureCommerceReady } = await import("../src/lib/commerce/local/bootstrap");
 
   if (reset) {

@@ -55,8 +55,13 @@ export function CartProvider({ initialCart, children }: { initialCart: Cart | nu
   const [isOpen, setOpen] = useState(false);
   const [busyItemIds, setBusy] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [prevInitialCart, setPrevInitialCart] = useState(initialCart);
 
-  useEffect(() => setCart(initialCart), [initialCart]);
+  // Re-sync when the server sends a new cart (derived during render, not in an effect).
+  if (initialCart !== prevInitialCart) {
+    setPrevInitialCart(initialCart);
+    setCart(initialCart);
+  }
 
   const apply = useCallback((result: CartActionResult) => {
     if (result.ok) {
