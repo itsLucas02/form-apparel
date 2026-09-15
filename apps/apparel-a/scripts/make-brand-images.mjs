@@ -10,6 +10,7 @@
  *   src/app/twitter-image.png   1200x630 — Twitter card
  */
 import path from "node:path";
+import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
@@ -58,5 +59,45 @@ for (const job of jobs) {
   const info = await sharp(Buffer.from(job.svg)).png().toFile(out);
   console.log(`ok  ${job.file}  ${info.width}x${info.height}  ${Math.round(info.size / 1024)}KB`);
 }
+
+/* Legacy /favicon.ico: a real ICO wrapping PNG payloads (16 + 32px). */
+async function png(size) {
+  return sharp(Buffer.from(iconSvg(size))).png().toBuffer();
+}
+
+function buildIco(images) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(images.length, 4);
+
+  const entries = Buffer.alloc(16 * images.length);
+  let offset = 6 + 16 * images.length;
+  const payloads = [];
+
+  images.forEach(({ size, buf }, i) => {
+    const e = i * 16;
+    entries.writeUInt8(size >= 256 ? 0 : size, e + 0);
+    entries.writeUInt8(size >= 256 ? 0 : size, e + 1);
+    entries.writeUInt8(0, e + 2);
+    entries.writeUInt8(0, e + 3);
+    entries.writeUInt16LE(1, e + 4);
+    entries.writeUInt16LE(32, e + 6);
+    entries.writeUInt32LE(buf.length, e + 8);
+    entries.writeUInt32LE(offset, e + 12);
+    payloads.push(buf);
+    offset += buf.length;
+  });
+
+  return Buffer.concat([header, entries, ...payloads]);
+}
+
+const ico = buildIco([
+  { size: 16, buf: await png(16) },
+  { size: 32, buf: await png(32) },
+]);
+const icoOut = path.join(appDir, "favicon.ico");
+await fs.writeFile(icoOut, ico);
+console.log(`ok  favicon.ico  ${Math.round(ico.length / 1024)}KB`);
 
 console.log("Done.");
